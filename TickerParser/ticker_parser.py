@@ -100,7 +100,7 @@ class OCC_Option(BaseTickerFormat):
     def to_ticker_string(s: Security) -> str:
         return (f"{s.root_symbol.upper()} {format(s.expiry_year, '0>2d')}{format(s.expiry_month, '0>2d')}"
                 f"{format(s.expiry_day, '0>2d')}"
-                f"{s.call_put}{format(s.strike_price*1000, '.0f')}")
+                f"{s.call_put}{format(s.strike_price*1000, '08.0f')}")
     
     
 class Bloomberg_Option(BaseTickerFormat):
@@ -137,7 +137,7 @@ class Bloomberg_Option(BaseTickerFormat):
             expiry_month = int(regex_match.groupdict()['expiry_month']),
             expiry_year = int(regex_match.groupdict()['expiry_year']),
             root_symbol = regex_match.groupdict()['root'],
-            strike_price = float(regex_match.groupdict()['strike']) / 1000
+            strike_price = float(regex_match.groupdict()['strike'])
 
         )
         
@@ -149,7 +149,7 @@ class Bloomberg_Option(BaseTickerFormat):
             fmt = '.2f'
         
         return (f"{s.root_symbol.upper()} {s.exchange} "
-                f"{format(s.expiry_year, '0>2d')}/{format(s.expiry_month, '0>2d')}/{format(s.expiry_day, '0>2d')} "
+                f"{format(s.expiry_month, '0>2d')}/{format(s.expiry_day, '0>2d')}/{format(s.expiry_year, '0>2d')} "
                 f"{s.call_put}{format(s.strike_price, fmt)} {s.bloomberg_suffix}")    
 
 
@@ -185,8 +185,7 @@ class Eze_Option(BaseTickerFormat):
             expiry_month = int(regex_match.groupdict()['expiry_month']),
             expiry_year = int(regex_match.groupdict()['expiry_year']),
             root_symbol = regex_match.groupdict()['root'],
-            strike_price = float(regex_match.groupdict()['strike']) / 1000
-
+            strike_price = float(regex_match.groupdict()['strike'])
         )
         
     def to_ticker_string(s: Security) -> str:
@@ -197,7 +196,7 @@ class Eze_Option(BaseTickerFormat):
             fmt = '.2f'
         
         return (f"{s.root_symbol.upper()} {s.exchange} "
-                f"{format(s.expiry_year, '0>2d')}/{format(s.expiry_month, '0>2d')}/{format(s.expiry_day, '0>2d')} "
+                f"{format(s.expiry_month, '0>2d')}/{format(s.expiry_day, '0>2d')}/{format(s.expiry_year, '0>2d')} "
                 f"{s.call_put}{format(s.strike_price, fmt)}")  
 
 
@@ -344,6 +343,9 @@ def parse_ticker(ticker: str) -> dict:
 
 
 
-
+def convert_ticker(ticker: str, target_format: str) -> str:
+    fmt = getattr(FORMAT_TYPES, target_format)
+    sec = _parse_ticker(ticker)
+    return FORMATS_FOR_REBUILD[sec.asset_class][fmt].to_ticker_string(sec)
 
              
