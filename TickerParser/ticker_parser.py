@@ -8,6 +8,7 @@ Created on Tue Feb 19 22:08:50 2019
 import logging
 import math
 import re
+from functools import lru_cache
 
 INDEX_LIST = ["SPX", "NDX", "INDU", "COMPX", "COMPQX", "RTY", "RUT", "MNX", "VIX", "/VXG18"]
 CASH_LIST = ["USD", "GBP", "WFUSUDI LX", "DGCXX", "FGTXX", "FTIXX", "IJTXX", "MISXX", "TFDXX"]
@@ -328,6 +329,7 @@ def _parse_ticker(ticker: str) -> Security:
         return f"Could not find exactly one regex match for ticker: {ticker}"
 
 
+@lru_cache(maxsize=128, typed=False)
 def parse_ticker(ticker: str) -> dict:
     logging.info(f"Parsing ticker: {ticker}")
     sec = _parse_ticker(ticker)
