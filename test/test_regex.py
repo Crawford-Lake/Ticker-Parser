@@ -9,7 +9,7 @@ import sys
 import pathlib
 
 # hack to add the folder to the python path
-app_path = pathlib.Path(__file__).parents[1]/'TickerParser'
+app_path = pathlib.Path(__file__).parents[1] / "TickerParser"
 sys.path.append(str(app_path))
 
 import pytest
@@ -21,7 +21,7 @@ def test_imports():
     print(tp.INDEX_LIST)
 
 
-class TestOptions_OCC_to_Bloomberg():
+class TestOptions_OCC_to_Bloomberg:
     def test_basic(self):
         actual = tp.convert_ticker("AAPL 180216C00170000", "Bloomberg")
         expected = "AAPL US 02/16/18 C170.0 Equity"
@@ -43,7 +43,7 @@ class TestOptions_OCC_to_Bloomberg():
         assert actual == expected
 
 
-class TestOptions_OCC_to_Eze():
+class TestOptions_OCC_to_Eze:
     def test_basic(self):
         actual = tp.convert_ticker("AAPL 180216C00170000", "Eze")
         expected = "AAPL US 02/16/18 C170.0"
@@ -65,7 +65,7 @@ class TestOptions_OCC_to_Eze():
         assert actual == expected
 
 
-class TestOptions_Bloomberg_to_OCC():
+class TestOptions_Bloomberg_to_OCC:
     def test_basic(self):
         actual = tp.convert_ticker("AAPL US 02/16/18 C170.0 Equity", "OCC")
         expected = "AAPL 180216C00170000"
@@ -87,7 +87,7 @@ class TestOptions_Bloomberg_to_OCC():
         assert actual == expected
 
 
-class TestOptions_Bloomberg_to_Eze():
+class TestOptions_Bloomberg_to_Eze:
     def test_basic(self):
         actual = tp.convert_ticker("AAPL US 02/16/18 C170.0 Equity", "Eze")
         expected = "AAPL US 02/16/18 C170.0"
@@ -109,8 +109,7 @@ class TestOptions_Bloomberg_to_Eze():
         assert actual == expected
 
 
-
-class TestOptions_Eze_to_OCC():
+class TestOptions_Eze_to_OCC:
     def test_basic(self):
         actual = tp.convert_ticker("AAPL US 02/16/18 C170.0", "OCC")
         expected = "AAPL 180216C00170000"
@@ -132,7 +131,7 @@ class TestOptions_Eze_to_OCC():
         assert actual == expected
 
 
-class TestOptions_Eze_to_Bloomberg():
+class TestOptions_Eze_to_Bloomberg:
     def test_basic(self):
         actual = tp.convert_ticker("AAPL US 02/16/18 C170.0", "Bloomberg")
         expected = "AAPL US 02/16/18 C170.0 Equity"
@@ -152,4 +151,3 @@ class TestOptions_Eze_to_Bloomberg():
         actual = tp.convert_ticker("AAPL US 02/16/18 C175.45", "Bloomberg")
         expected = "AAPL US 02/16/18 C175.45 Equity"
         assert actual == expected
-
