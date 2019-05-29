@@ -56,9 +56,11 @@ class Security:
 
 
 class BaseTickerFormat:
+    @staticmethod
     def to_Security(regex_match) -> Security:
         raise NotImplementedError()
 
+    @staticmethod
     def to_ticker_string(security: Security) -> str:
         raise NotImplementedError()
 
@@ -80,6 +82,7 @@ class OCC_Option(BaseTickerFormat):
         (?P<strike>\d{8})$                   # 8 digits for strike price
     """
 
+    @staticmethod
     def to_Security(regex_match):
         return Security(
             asset_class=ASSET_CLASS.Option,
@@ -94,6 +97,7 @@ class OCC_Option(BaseTickerFormat):
             strike_price=float(regex_match.groupdict()["strike"]) / 1000,
         )
 
+    @staticmethod
     def to_ticker_string(s: Security) -> str:
         return (
             f"{s.root_symbol.upper()} {format(s.expiry_year, '0>2d')}{format(s.expiry_month, '0>2d')}"
@@ -126,6 +130,7 @@ class Bloomberg_Option(BaseTickerFormat):
         (?P<bb_suffix>Equity)$              # the word 'Equity'
     """
 
+    @staticmethod
     def to_Security(regex_match):
         return Security(
             asset_class=ASSET_CLASS.Option,
@@ -140,6 +145,7 @@ class Bloomberg_Option(BaseTickerFormat):
             strike_price=float(regex_match.groupdict()["strike"]),
         )
 
+    @staticmethod
     def to_ticker_string(s: Security) -> str:
         # if first digit after the decimal is 0 or 5, then round to 1 decimal place, otherwise 2 places
         if round((s.strike_price - math.trunc(s.strike_price)), 4) in (float(0.5), float(0.0)):
@@ -176,6 +182,7 @@ class Eze_Option(BaseTickerFormat):
         (?P<strike>\d+\.?\d+|\d+)$          # one or more digits for strike price
     """
 
+    @staticmethod
     def to_Security(regex_match):
         return Security(
             asset_class=ASSET_CLASS.Option,
@@ -190,6 +197,7 @@ class Eze_Option(BaseTickerFormat):
             strike_price=float(regex_match.groupdict()["strike"]),
         )
 
+    @staticmethod
     def to_ticker_string(s: Security) -> str:
         # if first digit after the decimal is 0 or 5, then round to 1 decimal place, otherwise 2 places
         if round((s.strike_price - math.trunc(s.strike_price)), 4) in (float(0.5), float(0.0)):
@@ -212,6 +220,7 @@ class Generic_Non_Option(BaseTickerFormat):
         ^(?P<root>[a-zA-Z0-9._-]{1,10})$        #  ticker, 1 to 10 word characters
     """
 
+    @staticmethod
     def to_Security(regex_match):
         sec = Security(
             format_type=FORMAT_TYPES.Generic,
@@ -229,6 +238,7 @@ class Generic_Non_Option(BaseTickerFormat):
             sec.bloomberg_suffix = "Equity"
         return sec
 
+    @staticmethod
     def to_ticker_string(s: Security) -> str:
         return s.root_symbol.upper()
 
@@ -245,6 +255,7 @@ class Bloomberg_Equity(BaseTickerFormat):
         (?P<bb_suffix>Equity)$              # the word 'Equity'
     """
 
+    @staticmethod
     def to_Security(regex_match):
         return Security(
             asset_class=ASSET_CLASS.Equity,
@@ -254,6 +265,7 @@ class Bloomberg_Equity(BaseTickerFormat):
             root_symbol=regex_match.groupdict()["root"],
         )
 
+    @staticmethod
     def to_ticker_string(s: Security) -> str:
         return f"{s.root_symbol.upper()} {s.exchange} {s.bloomberg_suffix}"
 
@@ -268,6 +280,7 @@ class Bloomberg_Index(BaseTickerFormat):
         (?P<bb_suffix>Index)$               # the word 'Index'
     """
 
+    @staticmethod
     def to_Security(regex_match):
         return Security(
             asset_class=ASSET_CLASS.Index,
@@ -276,6 +289,7 @@ class Bloomberg_Index(BaseTickerFormat):
             root_symbol=regex_match.groupdict()["root"],
         )
 
+    @staticmethod
     def to_ticker_string(s: Security) -> str:
         return f"{s.root_symbol.upper()} {s.bloomberg_suffix}"
 
