@@ -35,6 +35,7 @@ class TestOptions_OCC_Ticker_Padding:
         expected = "AAPL US 02/16/18 C175.45 Equity"
         assert actual == expected
 
+
 class TestOptions_OCC_to_Bloomberg:
     def test_basic(self):
         actual = tp.convert_ticker("AAPL  180216C00170000", "Bloomberg")
@@ -56,7 +57,6 @@ class TestOptions_OCC_to_Bloomberg:
         expected = "AAPL US 02/16/18 C175.45 Equity"
         assert actual == expected
 
-    
 
 class TestOptions_OCC_to_Eze:
     def test_basic(self):

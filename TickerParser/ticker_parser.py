@@ -94,7 +94,9 @@ class OCC_Option(BaseTickerFormat):
             expiry_day=int(regex_match.groupdict()["expiry_day"]),
             expiry_month=int(regex_match.groupdict()["expiry_month"]),
             expiry_year=int(regex_match.groupdict()["expiry_year"]),
-            root_symbol=regex_match.groupdict()["root"].strip(), # remove whitespace padding from root
+            root_symbol=regex_match.groupdict()[
+                "root"
+            ].strip(),  # remove whitespace padding from root
             strike_price=float(regex_match.groupdict()["strike"]) / 1000,
         )
 
