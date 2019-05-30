@@ -67,19 +67,20 @@ class BaseTickerFormat:
 
 class OCC_Option(BaseTickerFormat):
     """
-    Example OCC: AAPL 180216C00170000
+    Example OCC: AAPL  180216C00170000
+
+    See https://en.wikipedia.org/wiki/Option_symbol
     """
 
     asset_class = (ASSET_CLASS.Option,)
     format_type = (FORMAT_TYPES.OCC,)
     regex_string = """
-        ^(?P<root>\w+)                       # beginning ticker, 1 or more word characters
-        (?P<delim>\s{1,10})                  # 1 to 10 separators
-        (?P<expiry_year>\d{2})               # 2 digits for yy
-        (?P<expiry_month>\d{2})              # 2 digits for mm
-        (?P<expiry_day>\d{2})                # 2 digits for dd
-        (?P<call_put>[CcPp])                 # C or P for call or put
-        (?P<strike>\d{8})$                   # 8 digits for strike price
+        ^(?P<root>[a-zA-Z ]{6})(?=\d{6}[CcPp]\d{8})     # beginning ticker padded with spaces, 6 total characters, only if followed by (6 digits,C or P, and 8 digits)
+        (?P<expiry_year>\d{2})                          # 2 digits for yy
+        (?P<expiry_month>\d{2})                         # 2 digits for mm
+        (?P<expiry_day>\d{2})                           # 2 digits for dd
+        (?P<call_put>[CcPp])                            # C or P for call or put
+        (?P<strike>\d{8})$                              # 8 digits for strike price
     """
 
     @staticmethod
@@ -93,14 +94,14 @@ class OCC_Option(BaseTickerFormat):
             expiry_day=int(regex_match.groupdict()["expiry_day"]),
             expiry_month=int(regex_match.groupdict()["expiry_month"]),
             expiry_year=int(regex_match.groupdict()["expiry_year"]),
-            root_symbol=regex_match.groupdict()["root"],
+            root_symbol=regex_match.groupdict()["root"].strip(), # remove whitespace padding from root
             strike_price=float(regex_match.groupdict()["strike"]) / 1000,
         )
 
     @staticmethod
     def to_ticker_string(s: Security) -> str:
         return (
-            f"{s.root_symbol.upper()} {format(s.expiry_year, '0>2d')}{format(s.expiry_month, '0>2d')}"
+            f"{s.root_symbol.upper()}{(6-len(s.root_symbol))*' '}{format(s.expiry_year, '0>2d')}{format(s.expiry_month, '0>2d')}"
             f"{format(s.expiry_day, '0>2d')}"
             f"{s.call_put}{format(s.strike_price*1000, '08.0f')}"
         )
@@ -114,7 +115,7 @@ class Bloomberg_Option(BaseTickerFormat):
     asset_class = (ASSET_CLASS.Option,)
     format_type = (FORMAT_TYPES.Bloomberg,)
     regex_string = """
-        ^(?P<root>\w+)                      # beginning ticker, 1 or more word characters
+        ^(?P<root>[a-zA-Z]+)                # beginning ticker, 1 or more letters
         (?P<delim>\s{1})                    # one separator
         (?P<exch>\w{2})                     # 2 letter exchange symbol (like US)
         (?P<delim2>\s{1})                   # one separator    
@@ -168,7 +169,7 @@ class Eze_Option(BaseTickerFormat):
     asset_class = (ASSET_CLASS.Option,)
     format_type = (FORMAT_TYPES.Eze,)
     regex_string = """
-        ^(?P<root>\w+)                      # beginning ticker, 1 or more word characters
+        ^(?P<root>[a-zA-Z]+)                # beginning ticker, 1 or more letters
         (?P<delim>\s{1})                    # one separator
         (?P<exch>\w{2})                     # 2 letter exchange symbol (like US)
         (?P<delim2>\s{1})                   # one separator    
@@ -217,7 +218,7 @@ class Generic_Non_Option(BaseTickerFormat):
     asset_class = (ASSET_CLASS.TempNonOption,)
     format_type = FORMAT_TYPES.Generic
     regex_string = """
-        ^(?P<root>[a-zA-Z0-9._-]{1,10})$        #  ticker, 1 to 10 word characters
+        ^(?P<root>[a-zA-Z0-9._\-/]{1,10})$        #  ticker, 1 to 10 word characters or one of [.-/]
     """
 
     @staticmethod
@@ -248,7 +249,7 @@ class Bloomberg_Equity(BaseTickerFormat):
     asset_class = (ASSET_CLASS.Equity,)
     format_type = FORMAT_TYPES.Bloomberg
     regex_string = """
-        ^(?P<root>\w{1,10})                  # beginning ticker, 1 to 10 word characters
+        ^(?P<root>[a-zA-Z0-9._\-/]{1,10})   # beginning ticker, 1 to 10 word characters or one of [.-/]
         (?P<delim>\s{1})                    # one separator
         ((?P<exch>\w{2})                    # 2 letter exchange symbol (like US), optional
         (?P<delim2>\s{1}))?                 # one separator, optional 
@@ -275,7 +276,7 @@ class Bloomberg_Index(BaseTickerFormat):
     asset_class = (ASSET_CLASS.Index,)
     format_type = FORMAT_TYPES.Bloomberg
     regex_string = """
-        ^(?P<root>\w{1,10})                  # beginning ticker, 1 to 10 word characters
+        ^(?P<root>[a-zA-Z0-9._\-/]{1,10})   # beginning ticker, 1 to 10 word characters or one of [.-/]
         (?P<delim>\s{1})                    # one separator
         (?P<bb_suffix>Index)$               # the word 'Index'
     """
@@ -364,7 +365,14 @@ def parse_ticker(ticker: str) -> dict:
         return {"ticker_original": ticker, "error_message": sec}
 
 
+class RegexMatchNotFoundException(Exception):
+    pass
+
+
 def convert_ticker(ticker: str, target_format: str) -> str:
     fmt = getattr(FORMAT_TYPES, target_format)
     sec = _parse_ticker(ticker)
-    return FORMATS_FOR_REBUILD[sec.asset_class][fmt].to_ticker_string(sec)
+    if isinstance(sec, Security):
+        return FORMATS_FOR_REBUILD[sec.asset_class][fmt].to_ticker_string(sec)
+    else:
+        raise RegexMatchNotFoundException(f"No regex matches found for: {ticker}")
