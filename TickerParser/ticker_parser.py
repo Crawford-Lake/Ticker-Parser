@@ -74,8 +74,8 @@ class OCC_Option(BaseTickerFormat):
 
     asset_class = (ASSET_CLASS.Option,)
     format_type = (FORMAT_TYPES.OCC,)
-    regex_string = """
-        ^(?P<root>[a-zA-Z ]{6})(?=\d{6}[CcPp]\d{8})     # beginning ticker padded with spaces, 6 total characters, only if followed by (6 digits,C or P, and 8 digits)
+    regex_string = r"""
+        ^(?P<root>[a-zA-Z ]{6})(?=\d{6}[CcPp]\d{8})     # beginning ticker padded with spaces, 6 total characters, only if followed by (6 digits, C or P, and 8 digits)
         (?P<expiry_year>\d{2})                          # 2 digits for yy
         (?P<expiry_month>\d{2})                         # 2 digits for mm
         (?P<expiry_day>\d{2})                           # 2 digits for dd
@@ -103,9 +103,8 @@ class OCC_Option(BaseTickerFormat):
     @staticmethod
     def to_ticker_string(s: Security) -> str:
         return (
-            f"{s.root_symbol.upper()}{(6-len(s.root_symbol))*' '}{format(s.expiry_year, '0>2d')}{format(s.expiry_month, '0>2d')}"
-            f"{format(s.expiry_day, '0>2d')}"
-            f"{s.call_put}{format(s.strike_price*1000, '08.0f')}"
+            f"{s.root_symbol.upper()}{(6-len(s.root_symbol))*' '}{s.expiry_year:0>2d}{s.expiry_month:0>2d}"
+            f"{s.expiry_day:0>2d}{s.call_put}{s.strike_price*1000:08.0f}"
         )
 
 
@@ -116,7 +115,7 @@ class Bloomberg_Option(BaseTickerFormat):
 
     asset_class = (ASSET_CLASS.Option,)
     format_type = (FORMAT_TYPES.Bloomberg,)
-    regex_string = """
+    regex_string = r"""
         ^(?P<root>[a-zA-Z]+)                # beginning ticker, 1 or more letters
         (?P<delim>\s{1})                    # one separator
         (?P<exch>\w{2})                     # 2 letter exchange symbol (like US)
@@ -158,7 +157,7 @@ class Bloomberg_Option(BaseTickerFormat):
 
         return (
             f"{s.root_symbol.upper()} {s.exchange} "
-            f"{format(s.expiry_month, '0>2d')}/{format(s.expiry_day, '0>2d')}/{format(s.expiry_year, '0>2d')} "
+            f"{s.expiry_month:0>2d}/{s.expiry_day:0>2d}/{s.expiry_year:0>2d} "
             f"{s.call_put}{format(s.strike_price, fmt)} {s.bloomberg_suffix}"
         )
 
@@ -170,7 +169,7 @@ class Eze_Option(BaseTickerFormat):
 
     asset_class = (ASSET_CLASS.Option,)
     format_type = (FORMAT_TYPES.Eze,)
-    regex_string = """
+    regex_string = r"""
         ^(?P<root>[a-zA-Z]+)                # beginning ticker, 1 or more letters
         (?P<delim>\s{1})                    # one separator
         (?P<exch>\w{2})                     # 2 letter exchange symbol (like US)
@@ -210,7 +209,7 @@ class Eze_Option(BaseTickerFormat):
 
         return (
             f"{s.root_symbol.upper()} {s.exchange} "
-            f"{format(s.expiry_month, '0>2d')}/{format(s.expiry_day, '0>2d')}/{format(s.expiry_year, '0>2d')} "
+            f"{s.expiry_month:0>2d}/{s.expiry_day:0>2d}/{s.expiry_year:0>2d} "
             f"{s.call_put}{format(s.strike_price, fmt)}"
         )
 
@@ -219,7 +218,7 @@ class Generic_Non_Option(BaseTickerFormat):
 
     asset_class = (ASSET_CLASS.TempNonOption,)
     format_type = FORMAT_TYPES.Generic
-    regex_string = """
+    regex_string = r"""
         ^(?P<root>[a-zA-Z0-9._\-/]{1,10})$        #  ticker, 1 to 10 word characters or one of [.-/]
     """
 
@@ -250,7 +249,7 @@ class Bloomberg_Equity(BaseTickerFormat):
 
     asset_class = (ASSET_CLASS.Equity,)
     format_type = FORMAT_TYPES.Bloomberg
-    regex_string = """
+    regex_string = r"""
         ^(?P<root>[a-zA-Z0-9._\-/]{1,10})   # beginning ticker, 1 to 10 word characters or one of [.-/]
         (?P<delim>\s{1})                    # one separator
         ((?P<exch>\w{2})                    # 2 letter exchange symbol (like US), optional
@@ -277,7 +276,7 @@ class Bloomberg_Index(BaseTickerFormat):
 
     asset_class = (ASSET_CLASS.Index,)
     format_type = FORMAT_TYPES.Bloomberg
-    regex_string = """
+    regex_string = r"""
         ^(?P<root>[a-zA-Z0-9._\-/]{1,10})   # beginning ticker, 1 to 10 word characters or one of [.-/]
         (?P<delim>\s{1})                    # one separator
         (?P<bb_suffix>Index)$               # the word 'Index'
